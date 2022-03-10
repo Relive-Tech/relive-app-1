@@ -106,7 +106,7 @@ const isAvailable = (imoStatus, action, ImoPrevious = null) => { /* action can b
 
 const preSendData = (data, imoState = null) => {
 
-    const { content, id, link, property_meta, status, title, type } = data
+    const { content, id, link, property_meta, status, title, type, agent } = data
 
     const { REAL_HOMES_property_images } = property_meta
 
@@ -142,6 +142,11 @@ const preSendData = (data, imoState = null) => {
         property_meta: {
             ...property_meta,
             REAL_HOMES_property_images: property_images
+        },
+        agent: {
+            name: agent.title,
+            email: agent.agent_meta.REAL_HOMES_agent_email,
+            contact: agent.agent_meta.REAL_HOMES_whatsapp_number
         }
     }
 }
