@@ -164,6 +164,7 @@ const Imovel = ({ params, signedIn }) => {
     const [status, setStatus] = useState(null);
     const [statusImo, setStatusImo] = useState(null);
     const [statusIde, setStatusIde] = useState(null);
+    const [statusSupercasa, setStatusSupercasa] = useState(null);
     const [statusImoPrevious, setStatusImoPrevious] = useState(null);
 
     const postImo = () => {
@@ -347,7 +348,8 @@ const Imovel = ({ params, signedIn }) => {
                             setStatus(res.data.status)
                             setStatusImo(res2.data.imoCode)
                             setStatusImoPrevious(res2.data.prevImoCode)
-                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null })
+                            setStatusSupercasa(res2.data.supercasaStatus)
+                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus })
                             /* axios.get(`/imovirtual/advert/${res.data.imovirtual}/statistics`)
                                 .then(res3 => {
                                     setLoading(false)
@@ -549,12 +551,137 @@ const Imovel = ({ params, signedIn }) => {
 
     }
 
+    const handleSupercasaPut = () => {
+        setLoading("A enviar pedido de publicação Supercasa")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                const sendData = preSendData(res.data)
+                axios.put(`/supercasa/advert/${params.id}`, {
+                    data: sendData
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(false)
+                        setStatusSupercasa('pending_request')
+                        console.log(res2)
+                        setInfo({
+                            error: false,
+                            msg: res2.data.message
+                        })
+                        handleClose()
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        handleClose()
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Supercasa ERROR Posting in Supercasa: ' + err.data ? err.data.error : err
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Supercasa ERROR Getting Property Info: ' + err.response.data.error
+                })
+                handleClose()
+                console.log(err)
+            })
+    }
+
+    const handleSupercasaDelete = () => {
+        setLoading("A enviar pedido de eliminação Supercasa")
+        axios.delete(`/supercasa/delete/${params.id}`)
+            .then(res => {
+                setLoading(false)
+                setPublish(false)
+                setStatusSupercasa('pending_delete')
+                setInfo({
+                    error: false,
+                    msg: 'Pedido de eliminação Supercasa enviado com sucesso'
+                })
+                handleClose()
+            })
+            .catch(err => {
+                setLoading(false)
+                handleClose()
+                console.log(err)
+                setInfo({
+                    error: true,
+                    msg: 'Supercasa ERROR delete in Supercasa: ' +err.data ? err.data.error : err
+                })
+            })
+    }
+
+    const handleSupercasaValidate = () => {
+        setLoading("A enviar pedido de validação Supercasa")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                const sendData = preSendData(res.data)
+                axios.post(`/supercasa/validate`, {
+                    data: sendData
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(true)
+                        console.log(res2.data)
+                        setInfo({
+                            error: true,
+                            msg: res2.data.message || 'Supercasa validado com sucesso!'
+                        })
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        setPublish(false)
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Supercasa ERROR Validating Property: ' + err.response.data.error
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Supercasa ERROR Getting Property'
+                })
+                console.log(err)
+            })
+    }
+
+    function translateSupercasaStatus(status) {
+        let translation = ""
+        switch (status) {
+            case 'pending_request':
+                translation = 'Ativação pendente';
+                break;
+            case 'pending_delete':
+                translation = 'Remoção pendente';
+                break;
+            case 'active':
+                translation = 'Ativo';
+                break;
+            case 'deleted':
+                translation = 'Removido';
+                break;
+            default:
+                translation = 'Inativo';    
+        }
+        
+
+        return translation;
+    }
+
     const displayStatus = status === "draft" ? "Rascunho" : status === "pending" ? "Revisão Pendente" : "Publico"
 
     const isWebsitePending = status === "pending" || status === "draft"
 
     const ImoStatusCode = statusImo || 'Not published'
     const IdeStatusCode = statusIde || data.ideCode || 'Desativo'
+    const SupercasaStatusCode = statusSupercasa || 'inactive'
     const isImoPending = ImoStatusCode.includes('pending') || ImoStatusCode.includes('pendente') ? true : false
 
     const objectiveStatus = data && data['imovel-estado'] && data['imovel-estado'].length ? data['imovel-estado'][0] === 77 ? 'A arrendar' : data['imovel-estado'][0] === 78 ? 'A vender' : data['imovel-estado'][0] === 174 ? 'Arrendado' : data['imovel-estado'][0] === 175 ? 'Vendido' : null : null
@@ -620,6 +747,16 @@ const Imovel = ({ params, signedIn }) => {
                                     <Button variant="contained" color="primary" target="_blank" href={data.imovirtual.state.url}>Ver página</Button>
                                 </Grid>
                             }
+                        </Grid>
+                        <Grid container justify="flex-start">
+                            <Grid item xs={4}>
+                                <h3>Estado Supercasa: <span style={{ color: SupercasaStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(SupercasaStatusCode)}</span></h3>
+                            </Grid>
+                            {/* {data.supercasaStatus && SupercasaStatusCode !== 'deleted' &&
+                                <Grid item xs={3}>
+                                    <Button variant="contained" color="primary" target="_blank" href={data.imovirtual.state.url}>Ver página</Button>
+                                </Grid>
+                            } */}
                         </Grid>
 
                         <p style={{ color: info.error ? 'red' : 'green', fontWeight: 500, textAlign: 'center' }}>
@@ -688,6 +825,18 @@ const Imovel = ({ params, signedIn }) => {
                             </Button>
                             <Button variant="contained" color="primary" disabled={data.idealista === 'delete' || !data.idealista} onClick={() => handleIdealistaDelete()}>
                                 Eliminar do Idealista
+                            </Button>
+                        </Grid>
+                        <h2>Editar Supercasa</h2>
+                        <Grid container justify='flex-end' className='action-container'>
+                            <Button variant="contained" color="primary" onClick={() => handleSupercasaValidate()}>
+                                Validar Supercasa
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => handleSupercasaPut()}>
+                                {SupercasaStatusCode && SupercasaStatusCode !== 'deleted' ? "Actualizar Supercasa" : "Publicar Supercasa"}
+                            </Button>
+                            <Button variant="contained" color="primary" disabled={data.supercasaStatus === 'deleted' || data.supercasaStatus === 'pending_delete' || !data.supercasaStatus} onClick={() => handleSupercasaDelete()}>
+                                Eliminar do Supercasa
                             </Button>
                         </Grid>
                     </>

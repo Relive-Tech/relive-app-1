@@ -128,19 +128,23 @@ const Imoveis = (props) => {
                         const newData = []
                         let auxFind = false
                         let IdeFind = false
+                        let SupFind = false
                         res.data.map(d => {
                             auxFind = false
                             IdeFind = false
+                            SupFind = false
                             res2.data.adverts.map(a => {
                                 if (a.website == d.id) {
                                     IdeFind = a.ideCode
+                                    SupFind = a.supercasaStatus
                                     return auxFind = a.status
                                 }
                             })
                             newData.push({
                                 ...d,
                                 inImovirtual: auxFind,
-                                inIdealista: IdeFind
+                                inIdealista: IdeFind,
+                                inSupercasa: SupFind
 
                             })
                         })
@@ -221,6 +225,11 @@ const Imoveis = (props) => {
                                                         color={b.inIdealista ? "primary" : "secondary"}
                                                         icon={b.inIdealista === 'active' ? <CheckCircleIcon /> : <CancelIcon />}
                                                         label={b.inIdealista === 'active' ? "Idealista" : b.inIdealista ? "Idealista " + b.inIdealista : "Idealista"}
+                                                    />
+                                                     <Chip
+                                                        color={b.inSupercasa ? "primary" : "secondary"}
+                                                        icon={b.inSupercasa === 'active' ? <CheckCircleIcon /> : <CancelIcon />}
+                                                        label={b.inSupercasa === 'active' ? "Supercasa" : b.inSupercasa ? "Supercasa " + b.inSupercasa : "Supercasa"}
                                                     />
                                                 </ListItemSecondaryAction>
                                             </ListItem>
