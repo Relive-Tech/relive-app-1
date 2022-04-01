@@ -129,14 +129,17 @@ const Imoveis = (props) => {
                         let auxFind = false
                         let IdeFind = false
                         let SupFind = false
+                        let FBFind = false
                         res.data.map(d => {
                             auxFind = false
                             IdeFind = false
                             SupFind = false
+                            FBFind = false
                             res2.data.adverts.map(a => {
                                 if (a.website == d.id) {
                                     IdeFind = a.ideCode
                                     SupFind = a.supercasaStatus
+                                    FBFind = a.facebookStatus
                                     return auxFind = a.status
                                 }
                             })
@@ -144,7 +147,8 @@ const Imoveis = (props) => {
                                 ...d,
                                 inImovirtual: auxFind,
                                 inIdealista: IdeFind,
-                                inSupercasa: SupFind
+                                inSupercasa: SupFind,
+                                inFacebook: FBFind
 
                             })
                         })
@@ -230,6 +234,11 @@ const Imoveis = (props) => {
                                                         color={b.inSupercasa ? "primary" : "secondary"}
                                                         icon={b.inSupercasa === 'active' ? <CheckCircleIcon /> : <CancelIcon />}
                                                         label={b.inSupercasa === 'active' ? "Supercasa" : b.inSupercasa ? "Supercasa " + b.inSupercasa : "Supercasa"}
+                                                    />
+                                                    <Chip
+                                                        color={b.inFacebook ? "primary" : "secondary"}
+                                                        icon={b.inFacebook === 'pending_request' ? <CheckCircleIcon /> : <CancelIcon />}
+                                                        label={b.inFacebook === 'pending_request' ? "FB" : b.inFacebook ? "FB " + b.inFacebook : "FB"}
                                                     />
                                                 </ListItemSecondaryAction>
                                             </ListItem>
