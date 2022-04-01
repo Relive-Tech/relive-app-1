@@ -165,6 +165,7 @@ const Imovel = ({ params, signedIn }) => {
     const [statusImo, setStatusImo] = useState(null);
     const [statusIde, setStatusIde] = useState(null);
     const [statusSupercasa, setStatusSupercasa] = useState(null);
+    const [statusFacebook, setStatusFacebook] = useState(null);
     const [statusImoPrevious, setStatusImoPrevious] = useState(null);
 
     const postImo = () => {
@@ -349,7 +350,8 @@ const Imovel = ({ params, signedIn }) => {
                             setStatusImo(res2.data.imoCode)
                             setStatusImoPrevious(res2.data.prevImoCode)
                             setStatusSupercasa(res2.data.supercasaStatus)
-                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus })
+                            setStatusFacebook(res2.data.facebookStatus)
+                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, facebookStatus: res2.data.facebookStatus })
                             /* axios.get(`/imovirtual/advert/${res.data.imovirtual}/statistics`)
                                 .then(res3 => {
                                     setLoading(false)
@@ -652,6 +654,107 @@ const Imovel = ({ params, signedIn }) => {
             })
     }
 
+    const handleFacebookPut = () => {
+        setLoading("A enviar pedido de atualização Facebook")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                const sendData = preSendData(res.data)
+                axios.put(`/facebook/advert/${params.id}`, {
+                    data: sendData
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(false)
+                        setStatusFacebook('pending_request')
+                        console.log(res2)
+                        setInfo({
+                            error: false,
+                            msg: res2.data.message
+                        })
+                        handleClose()
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        handleClose()
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'ERROR PUT updating in Facebook: ' + err.data ? err.data.error : err
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Facebook ERROR Getting Property Info: ' + err.response.data.error
+                })
+                handleClose()
+                console.log(err)
+            })
+    }
+
+    const handleFacebookDelete = () => {
+        setLoading("A enviar pedido de eliminação Facebook")
+        axios.delete(`/facebook/advert/${params.id}`)
+            .then(res => {
+                setLoading(false)
+                setPublish(false)
+                setStatusFacebook('pending_delete')
+                setInfo({
+                    error: false,
+                    msg: 'Pedido de eliminação Facebook enviado com sucesso'
+                })
+                handleClose()
+            })
+            .catch(err => {
+                setLoading(false)
+                handleClose()
+                console.log(err)
+                setInfo({
+                    error: true,
+                    msg: 'ERROR delete in Facebook: ' +err.data ? err.data.error : err
+                })
+            })
+    }
+
+    const handleFacebookValidate = () => {
+        setLoading("A enviar pedido de validação Facebook Marketplace")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                const sendData = preSendData(res.data)
+                axios.post(`/facebook/validate`, {
+                    data: sendData
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(true)
+                        console.log(res2.data)
+                        setInfo({
+                            error: true,
+                            msg: res2.data.message || 'Facebook validado com sucesso!'
+                        })
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        setPublish(false)
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Facebook ERROR Validating Property: ' + err.response.data.error
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Facebook ERROR Getting Property'
+                })
+                console.log(err)
+            })
+    }
+
     function translateSupercasaStatus(status) {
         let translation = ""
         switch (status) {
@@ -660,6 +763,29 @@ const Imovel = ({ params, signedIn }) => {
                 break;
             case 'pending_delete':
                 translation = 'Remoção pendente';
+                break;
+            case 'active':
+                translation = 'Ativo';
+                break;
+            case 'deleted':
+                translation = 'Removido';
+                break;
+            default:
+                translation = 'Inativo';    
+        }
+        
+
+        return translation;
+    }
+
+    function translateFacebookStatus(status) {
+        let translation = ""
+        switch (status) {
+            case 'pending_request':
+                translation = 'Adicionado ao Feed';
+                break;
+            case 'pending_delete':
+                translation = 'Removido do Feed';
                 break;
             case 'active':
                 translation = 'Ativo';
@@ -758,6 +884,16 @@ const Imovel = ({ params, signedIn }) => {
                                 </Grid>
                             } */}
                         </Grid>
+                        <Grid container justify="flex-start">
+                            <Grid item xs={4}>
+                                <h3>Estado Facebook: <span style={{ color: statusFacebook === 'active' || statusFacebook === 'pending_request' ? '#82ca9d' : 'red' }}>{translateFacebookStatus(statusFacebook)}</span></h3>
+                            </Grid>
+                            {/* {data.supercasaStatus && SupercasaStatusCode !== 'deleted' &&
+                                <Grid item xs={3}>
+                                    <Button variant="contained" color="primary" target="_blank" href={data.imovirtual.state.url}>Ver página</Button>
+                                </Grid>
+                            } */}
+                        </Grid>
 
                         <p style={{ color: info.error ? 'red' : 'green', fontWeight: 500, textAlign: 'center' }}>
                             {info.msg}
@@ -837,6 +973,18 @@ const Imovel = ({ params, signedIn }) => {
                             </Button>
                             <Button variant="contained" color="primary" disabled={data.supercasaStatus === 'deleted' || data.supercasaStatus === 'pending_delete' || !data.supercasaStatus} onClick={() => handleSupercasaDelete()}>
                                 Eliminar do Supercasa
+                            </Button>
+                        </Grid>
+                        <h2>Editar Facebook Marketplace</h2>
+                        <Grid container justify='flex-end' className='action-container'>
+                            <Button variant="contained" color="primary" onClick={() => handleFacebookValidate()}>
+                                Validar Facebook
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => handleFacebookPut()}>
+                                {statusFacebook && statusFacebook !== 'deleted' ? "Actualizar Facebook" : "Publicar Facebook"}
+                            </Button>
+                            <Button variant="contained" color="primary" disabled={statusFacebook === 'deleted' || statusFacebook === 'pending_delete' || !data.facebookStatus} onClick={() => handleFacebookDelete()}>
+                                Eliminar do facebook
                             </Button>
                         </Grid>
                     </>
