@@ -10,7 +10,7 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 
-axios.defaults.baseURL = 'https://relive.pt/wp-json'
+axios.defaults.baseURL = 'https://imoveis.relive.pt/wp-json'
 
 axios.post('/jwt-auth/v1/token', { username: 'sergioferras97', password: process.env.PASS })
   .then(res => {
