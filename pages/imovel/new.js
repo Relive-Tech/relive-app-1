@@ -45,7 +45,7 @@ const NewProp = (props) => {
             <Head>
                 <title>Nova propriedade Relive</title>
             </Head>
-            <iframe src="https://relive.pt/submit/?title=Telogo" loading="lazy" style={{ width: '100%', height: '1000px' }} title="Submeter Propriedade Relive">
+            <iframe src="https://imoveis.relive.pt/submit/?title=Telogo" loading="lazy" style={{ width: '100%', height: '1000px' }} title="Submeter Propriedade Relive">
 
 
             </iframe>

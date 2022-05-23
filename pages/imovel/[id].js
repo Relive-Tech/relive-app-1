@@ -1054,7 +1054,7 @@ export async function getStaticPaths() {
                 let paths = []
         
     try {
-                axios.defaults.baseURL = 'https://relive.pt/wp-json'
+                axios.defaults.baseURL = 'https://imoveis.relive.pt/wp-json'
         await axios.post('/jwt-auth/v1/token', {username: 'sergioferras97', password: process.env.PASS })
             .then(res => {
                 axios.defaults.headers.common = { 'Authorization': `Bearer ${res.data.token}` }

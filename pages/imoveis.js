@@ -25,7 +25,7 @@ import { Button } from "@material-ui/core"
 
 
 /* import WPAPI from 'wpapi'  */
-/* const apiPromise = WPAPI.discover( 'https://relive.pt' ).then(function( site ) {
+/* const apiPromise = WPAPI.discover( 'https://imoveis.relive.pt' ).then(function( site ) {
     return site.auth({
         username: 'sergioferras97', ////////////////////////// ENV
         password: 'S@ndw1ch_123'
@@ -35,13 +35,13 @@ import { Button } from "@material-ui/core"
 /* const WPAPI = require("wpapi"); */
 
 /* const site = new WPAPI({
-    endpoint: 'https://relive.pt/wp-json',
+    endpoint: 'https://imoveis.relive.pt/wp-json',
     username: 'sergioferras97',
     password: 'S@ndw1ch_123',
     auth: true
 }); */
 
-/* const apiPromise = WPAPI.discover( 'https://relive.pt' ).then(function( site ) {
+/* const apiPromise = WPAPI.discover( 'https://imoveis.relive.pt' ).then(function( site ) {
     return site.auth({
         username: 'sergioferras97', ////////////////////////// ENV
         password: 'S@ndw1ch_123'
@@ -62,7 +62,7 @@ site.imoveis().then(d => console.log(d)); */
 
     }); */
 
-/* const site = new WPAPI({ endpoint: 'https://relive.pt/wp-json' });
+/* const site = new WPAPI({ endpoint: 'https://imoveis.relive.pt/wp-json' });
 
 site.imoveis = site.registerRoute('imoveis');
 site.imoveis().then(d => console.log(d)); */
@@ -79,7 +79,7 @@ const Imoveis = (props) => {
 
     /*     const handlePage = async (i) => {
             try {
-                const res = await fetch("https://relive.pt/wp-json/wp/v2/imoveis?page=" + i);
+                const res = await fetch("https://imoveis.relive.pt/wp-json/wp/v2/imoveis?page=" + i);
                 const resJson = await res.json();
                 setProperties(resJson.data)
             } catch (err) {
@@ -90,7 +90,7 @@ const Imoveis = (props) => {
     /*     const handleImages = async (i) => {
             
             try {
-                const res = await fetch("https://relive.pt/wp-json/wp/v2/imoveis?page=" + i);
+                const res = await fetch("https://imoveis.relive.pt/wp-json/wp/v2/imoveis?page=" + i);
                 const resJson = await res.json();
                 setProperties(resJson.data)
             } catch (err) {
@@ -290,7 +290,7 @@ const Imoveis = (props) => {
 
     let data = []
     try {
-        axios.defaults.baseURL = 'https://relive.pt/wp-json'
+        axios.defaults.baseURL = 'https://imoveis.relive.pt/wp-json'
 
         await axios.post('/jwt-auth/v1/token', { username: 'sergioferras97', password: process.env.PASS })
             .then(res => {
