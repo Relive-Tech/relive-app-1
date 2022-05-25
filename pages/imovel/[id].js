@@ -144,9 +144,9 @@ const preSendData = (data, imoState = null) => {
             REAL_HOMES_property_images: property_images
         },
         agent: {
-            name: agent.title,
-            email: agent.agent_meta.REAL_HOMES_agent_email,
-            contact: agent.agent_meta.REAL_HOMES_whatsapp_number
+            name: agent.name,
+            email: agent.email,
+            contact: agent.phone
         }
     }
 }
