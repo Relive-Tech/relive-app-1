@@ -136,7 +136,7 @@ const Imoveis = (props) => {
                             SupFind = false
                             FBFind = false
                             res2.data.adverts.map(a => {
-                                if (a.website == d.id) {
+                                if (a.website == d.website_id) {
                                     IdeFind = a.ideCode
                                     SupFind = a.supercasaStatus
                                     FBFind = a.facebookStatus
@@ -198,28 +198,21 @@ const Imoveis = (props) => {
                         }
                         <List className="lista">
                             {properties.map((b, i) => {
-                                const media = b._embedded ? b._embedded["wp:featuredmedia"] : null
-                                const sold = b["imovel-estado"].includes(174) || b["imovel-estado"].includes(175) /* Vendido ou Arrendado */
                                 return (
-                                    <Link as={`/imovel/${b.id}`} href={`/imovel/?id=${b.id}`} key={b.id}>
+                                    <Link as={`/imovel/${b.website_id}`} href={`/imovel/?id=${b.website_id}`} key={b.website_id}>
                                         <a className="nostyle">
-                                            <ListItem key={b.id} button className="lista-item" style={{ backgroundColor: sold ? '#e1ffde' : null }}>
+                                            <ListItem key={b.website_id} button className="lista-item" style={{ backgroundColor: b.online_status == 'closed' ? '#e1ffde' : b.online_status == 'pending-portals-delete' ? '#FFF2CC' : null }}>
                                                 <ListItemAvatar>
                                                     <Avatar
                                                         className="avatar"
                                                         variant="rounded"
-                                                        alt={`Propriedade ID:${b.id}`}
-                                                        src={media && media[0].source_url}
-                                                    />
+                                                        alt={`Propriedade ID:${b.website_id}`}
+                                                        src={b.thumbnail}
+                                                    >{b.website_id}</Avatar>
                                                 </ListItemAvatar>
-                                                {/* <ListItemText className="lista-text" id={b.id} primary={b.title.rendered} /> */}
-                                                <h2 className="lista-text">{b.title.rendered}</h2>
+                                                {/* <ListItemText className="lista-text" id={b.website_id} primary={b.title.rendered} /> */}
+                                                <h2 className="lista-text">{b.title}</h2>
                                                 <ListItemSecondaryAction>
-                                                    <Chip
-                                                        color={b.status === 'publish' ? "primary" : b.status === 'pending' ? "secondary" : "default"}
-                                                        icon={b.status === 'publish' ? <PublicIcon /> : <CreateIcon />}
-                                                        label={b.status === 'publish' ? "Publico" : b.status === 'pending' ? "Em Revisão" : "Rascunho"}
-                                                    />
                                                     <Chip
                                                         color={b.inImovirtual ? "primary" : "secondary"}
                                                         icon={b.inImovirtual === 'active' ? <CheckCircleIcon /> : <CancelIcon />}
