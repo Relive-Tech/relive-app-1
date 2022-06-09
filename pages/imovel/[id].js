@@ -104,54 +104,6 @@ const isAvailable = (imoStatus, action, ImoPrevious = null) => { /* action can b
 
 }
 
-const preSendData = (data, imoState = null) => {
-
-    const { content, id, link, property_meta, status, title, type, agent } = data
-
-    const { REAL_HOMES_property_images } = property_meta
-
-    const property_images = REAL_HOMES_property_images.map(img => { return { full_url: img.full_url } })
-
-
-    /* Remove HTML from content */
-    const contentNoHTML = document.createElement("DIV");
-    contentNoHTML.innerHTML = content.rendered
-
-    /*     function stripHtml(html) {
-            var tmp = document.createElement("DIV");
-            tmp.innerHTML = html;
-            return tmp.textContent || tmp.innerText || "";
-        } */
-
-
-    const timestamp = moment().unix()
-
-    return {
-        id,
-        timestamp,
-        alreadyImo: imoState && imoState === 'removed_by_user',
-        link,
-        status,
-        type,
-        title,
-        content: { rendered: contentNoHTML.textContent || contentNoHTML.innerText || "" },
-        "imovel-caracteristicas": data["imovel-caracteristicas"],
-        "imovel-estado": data["imovel-estado"],
-        "imovel-tipo": data["imovel-tipo"],
-        "localizacao-imovel": data["localizacao-imovel"],
-        property_meta: {
-            ...property_meta,
-            REAL_HOMES_property_images: property_images
-        },
-        agent: {
-            name: agent.name,
-            email: agent.email,
-            contact: agent.phone
-        }
-    }
-}
-
-
 const Imovel = ({ params, signedIn }) => {
     const [data, setData] = useState([]);
     const [open, setOpen] = useState(false);
@@ -170,11 +122,15 @@ const Imovel = ({ params, signedIn }) => {
 
     const postImo = () => {
         setLoading("A enviar pedido de publicação a Imovirtual")
+        const timestamp = moment().unix()
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data, statusImo)
                 axios.post(`/imovirtual/advert/${params.id}`, {
-                    data: sendData
+                    data: {
+                        ...res.data,
+                        timestamp,
+                        alreadyImo: statusImo && statusImo === 'removed_by_user',
+                    }
                 })
                     .then(res => {
                         setLoading(false)
@@ -209,11 +165,15 @@ const Imovel = ({ params, signedIn }) => {
 
     const putImo = () => {
         setLoading("A enviar pedido de atualização a Imovirtual")
+        const timestamp = moment().unix()
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.put(`/imovirtual/advert/${data.imovirtual.uuid}`, {
-                    data: sendData
+                    data: {
+                        ...res.data,
+                        timestamp,
+                        alreadyImo: statusImo && statusImo === 'removed_by_user',
+                    }
                 })
                     .then(res => {
                         setLoading(false)
@@ -271,11 +231,15 @@ const Imovel = ({ params, signedIn }) => {
 
     const validateImo = () => {
         setLoading("A enviar pedido de validação a Imovirtual")
+        const timestamp = moment().unix()
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.post(`/imovirtual/advert/validate`, {
-                    data: sendData
+                    data: {
+                        ...res.data,
+                        timestamp,
+                        alreadyImo: statusImo && statusImo === 'removed_by_user',
+                    }
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -431,24 +395,6 @@ const Imovel = ({ params, signedIn }) => {
             }))
     }
 
-    const handlePublish = () => {
-        axios.put(`/api/imoveis/${data.id}`, {
-            status: "publish" /* draft */
-        })
-            .then(res => {
-                console.log(res)
-                setInfo({
-                    error: false,
-                    msg: 'Pedido de publicação enviado'
-                })
-                setOpen(false);
-            })
-            .catch(err => setInfo({
-                error: true,
-                msg: 'Ocorreu algum erro'
-            }))
-    }
-
     const deleteAdvert = () => {
         setOpen('delete');
     }
@@ -457,9 +403,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de validação Idealista")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.post(`/idealista/advert/validate`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -493,9 +438,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de publicação Idealista")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.post(`/idealista/advert/${params.id}`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -557,9 +501,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de publicação Supercasa")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.put(`/supercasa/advert/${params.id}`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -621,9 +564,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de validação Supercasa")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.post(`/supercasa/validate`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -658,9 +600,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de atualização Facebook")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.put(`/facebook/advert/${params.id}`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -722,9 +663,8 @@ const Imovel = ({ params, signedIn }) => {
         setLoading("A enviar pedido de validação Facebook Marketplace")
         axios.get(`/api/imoveis/${params.id}`)
             .then(res => {
-                const sendData = preSendData(res.data)
                 axios.post(`/facebook/validate`, {
-                    data: sendData
+                    data: res.data
                 })
                     .then(res2 => {
                         setLoading(false)
@@ -810,15 +750,8 @@ const Imovel = ({ params, signedIn }) => {
     const SupercasaStatusCode = statusSupercasa || 'inactive'
     const isImoPending = ImoStatusCode.includes('pending') || ImoStatusCode.includes('pendente') ? true : false
 
-    const objectiveStatus = data && data['imovel-estado'] && data['imovel-estado'].length ? data['imovel-estado'][0] === 77 ? 'A arrendar' : data['imovel-estado'][0] === 78 ? 'A vender' : data['imovel-estado'][0] === 174 ? 'Arrendado' : data['imovel-estado'][0] === 175 ? 'Vendido' : null : null
-    const type =
-        data && data['imovel-tipo'] && data['imovel-tipo'].length ?
-            data['imovel-tipo'][0] === 34 ?
-                'Moradia' : data['imovel-tipo'].includes(91) ?
-                    'Loja' : data['imovel-tipo'].includes(87) ?
-                        'Escritorio' : data['imovel-tipo'][0] === 194 ?
-                            'Terreno' : data['imovel-tipo'][0] === 192 ?
-                                'Prédio' : 'Apartamento' : null
+    const objectiveStatus = data && data.business_type
+    const type = data.property_type
 
     /* console.log('Previous Imo', statusImoPrevious) */
 
@@ -839,19 +772,16 @@ const Imovel = ({ params, signedIn }) => {
             <Container maxWidth="lg" className="container">
                 {data.title ?
                     <>
-                        <h2>{data.title.rendered}</h2>
+                        <h2>{data.title}</h2>
                         <Grid container justify="flex-start">
-                            <Grid item xs={4}>
+                            {/* <Grid item xs={4}>
                                 <h3>Estado Website: <span style={{ color: displayStatus === 'Publico' ? '#82ca9d' : 'red' }}>{displayStatus}</span></h3>
-                            </Grid>
+                            </Grid> */}
                             <Grid item xs={3}>
                                 <h3>Tipo: <span style={{ color: '#82ca9d' }}>{type}</span></h3>
                             </Grid>
                             <Grid item xs={3}>
                                 <h3>Objectivo: <span style={{ color: '#82ca9d' }}>{objectiveStatus}</span></h3>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button variant="contained" color="primary" target="_blank" href={data.link}>Ver página</Button>
                             </Grid>
                         </Grid>
                         <Grid container justify="flex-start">
@@ -921,15 +851,6 @@ const Imovel = ({ params, signedIn }) => {
                                 </LineChart>
                             </>
                         }
-                        <h2>Editar Website</h2>
-                        <Grid container justify="flex-end" className="action-container">
-                            {/* <Button variant="contained" color="secondary" onClick={() => handlePending()}>
-                                {status === "pending" ? 'Guardar como "Rascunho"' : 'Guardar como "Revisão Pendente"'}
-                            </Button> */}
-                            <Button variant="contained" color={isWebsitePending ? "primary" : "secondary"} onClick={() => isWebsitePending ? handleClickOpen('wp') : handlePending()}>
-                                {isWebsitePending ? "Publicar no Website" : "Guardar como 'Revisão Pendente'"}
-                            </Button>
-                        </Grid>
                         <h2>Editar Imovirtual</h2>
                         <Grid container justify="flex-end" className="action-container">
                             <Button variant="contained" color="primary" disabled={statusImo === 'Error Authentication'} onClick={() => validateImo()}>
@@ -1002,14 +923,14 @@ const Imovel = ({ params, signedIn }) => {
                 <DialogTitle id="alert-dialog-slide-title">Tens a certeza que queres {open === 'delete' ? ' eliminar' : open === 'imoPut' ? ' atualizar' : ' publicar'}?</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-slide-description">
-                        Se clicares "Sim", o imovel ficará {open === 'delete' ? ' eliminado' : ' público'} no {open === 'wp' ? ' Website da Relive' : open === 'imoPut' ? ' Imovirtual e com informação atualizada do website' : ' Imovirtual'}.
+                        Se clicares "Sim", o imovel ficará {open === 'delete' ? ' eliminado' : ' público'} no { open === 'imoPut' ? ' Imovirtual e com informação atualizada do website' : ' Imovirtual'}.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
                         Não
                     </Button>
-                    <Button onClick={open === 'wp' ? handlePublish : open === 'imoPut' ? putImo : open === 'delete' ? deleteImo : postImo} color="primary">
+                    <Button onClick={open === 'imoPut' ? putImo : open === 'delete' ? deleteImo : postImo} color="primary">
                         Sim
                     </Button>
                 </DialogActions>
