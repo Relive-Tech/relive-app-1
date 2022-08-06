@@ -117,6 +117,7 @@ const Imovel = ({ params, signedIn }) => {
     const [statusImo, setStatusImo] = useState(null);
     const [statusIde, setStatusIde] = useState(null);
     const [statusSupercasa, setStatusSupercasa] = useState(null);
+    const [statusKyero, setStatusKyero] = useState(null);
     const [statusFacebook, setStatusFacebook] = useState(null);
     const [statusImoPrevious, setStatusImoPrevious] = useState(null);
 
@@ -314,8 +315,9 @@ const Imovel = ({ params, signedIn }) => {
                             setStatusImo(res2.data.imoCode)
                             setStatusImoPrevious(res2.data.prevImoCode)
                             setStatusSupercasa(res2.data.supercasaStatus)
+                            setStatusKyero(res2.data.kyeroStatus)
                             setStatusFacebook(res2.data.facebookStatus)
-                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, facebookStatus: res2.data.facebookStatus })
+                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, kyeroStatus: res2.data.kyeroStatus, facebookStatus: res2.data.facebookStatus })
                             /* axios.get(`/imovirtual/advert/${res.data.imovirtual}/statistics`)
                                 .then(res3 => {
                                     setLoading(false)
@@ -596,6 +598,105 @@ const Imovel = ({ params, signedIn }) => {
             })
     }
 
+    const handleKyeroPut = () => {
+        setLoading("A enviar pedido de publicação Kyero")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.put(`/kyero/advert/${params.id}`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(false)
+                        setStatusKyero('pending_request')
+                        console.log(res2)
+                        setInfo({
+                            error: false,
+                            msg: res2.data.message
+                        })
+                        handleClose()
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        handleClose()
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Kyero ERROR Posting in Kyero: ' + err.data ? err.data.error : err
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Kyero ERROR Getting Property Info: ' + err.response.data.error
+                })
+                handleClose()
+                console.log(err)
+            })
+    }
+
+    const handleKyeroDelete = () => {
+        setLoading("A enviar pedido de eliminação Kyero")
+        axios.delete(`/kyero/delete/${params.id}`)
+            .then(res => {
+                setLoading(false)
+                setPublish(false)
+                setStatusKyero('pending_delete')
+                setInfo({
+                    error: false,
+                    msg: 'Pedido de eliminação Kyero enviado com sucesso'
+                })
+                handleClose()
+            })
+            .catch(err => {
+                setLoading(false)
+                handleClose()
+                console.log(err)
+                setInfo({
+                    error: true,
+                    msg: 'Kyero ERROR delete in Kyero: ' +err.data ? err.data.error : err
+                })
+            })
+    }
+
+    const handleKyeroValidate = () => {
+        setLoading("A enviar pedido de validação Kyero")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.post(`/kyero/validate`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(true)
+                        console.log(res2.data)
+                        setInfo({
+                            error: true,
+                            msg: res2.data.message || 'Kyero validado com sucesso!'
+                        })
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        setPublish(false)
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Kyero ERROR Validating Property: ' + err.response.data.error
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Kyero ERROR Getting Property'
+                })
+                console.log(err)
+            })
+    }
+
     const handleFacebookPut = () => {
         setLoading("A enviar pedido de atualização Facebook")
         axios.get(`/api/imoveis/${params.id}`)
@@ -748,6 +849,7 @@ const Imovel = ({ params, signedIn }) => {
     const ImoStatusCode = statusImo || 'Not published'
     const IdeStatusCode = statusIde || data.ideCode || 'Desativo'
     const SupercasaStatusCode = statusSupercasa || 'inactive'
+    const KyeroStatusCode = statusKyero || 'inactive'
     const isImoPending = ImoStatusCode.includes('pending') || ImoStatusCode.includes('pendente') ? true : false
 
     const objectiveStatus = data && data.business_type
@@ -823,6 +925,11 @@ const Imovel = ({ params, signedIn }) => {
                                     <Button variant="contained" color="primary" target="_blank" href={data.imovirtual.state.url}>Ver página</Button>
                                 </Grid>
                             } */}
+                        </Grid>
+                        <Grid container justify="flex-start">
+                            <Grid item xs={4}>
+                                <h3>Estado Kyero: <span style={{ color: KyeroStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(KyeroStatusCode)}</span></h3>
+                            </Grid>
                         </Grid>
 
                         <p style={{ color: info.error ? 'red' : 'green', fontWeight: 500, textAlign: 'center' }}>
@@ -906,6 +1013,18 @@ const Imovel = ({ params, signedIn }) => {
                             </Button>
                             <Button variant="contained" color="primary" disabled={statusFacebook === 'deleted' || statusFacebook === 'pending_delete' || !data.facebookStatus} onClick={() => handleFacebookDelete()}>
                                 Eliminar do facebook
+                            </Button>
+                        </Grid>
+                        <h2>Editar Kyero</h2>
+                        <Grid container justify='flex-end' className='action-container'>
+                            <Button variant="contained" color="primary" onClick={() => handleKyeroValidate()}>
+                                Validar Kyero
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => handleKyeroPut()}>
+                                {KyeroStatusCode && KyeroStatusCode !== 'deleted' ? "Actualizar Kyero" : "Publicar Kyero"}
+                            </Button>
+                            <Button variant="contained" color="primary" disabled={data.kyeroStatus === 'deleted' || data.kyeroStatus === 'pending_delete' || !data.kyeroStatus} onClick={() => handleKyeroDelete()}>
+                                Eliminar do Kyero
                             </Button>
                         </Grid>
                     </>
