@@ -118,6 +118,7 @@ const Imovel = ({ params, signedIn }) => {
     const [statusIde, setStatusIde] = useState(null);
     const [statusSupercasa, setStatusSupercasa] = useState(null);
     const [statusKyero, setStatusKyero] = useState(null);
+    const [statusJamesEdition, setStatusJamesEdition] = useState(null);
     const [statusFacebook, setStatusFacebook] = useState(null);
     const [statusImoPrevious, setStatusImoPrevious] = useState(null);
 
@@ -316,8 +317,9 @@ const Imovel = ({ params, signedIn }) => {
                             setStatusImoPrevious(res2.data.prevImoCode)
                             setStatusSupercasa(res2.data.supercasaStatus)
                             setStatusKyero(res2.data.kyeroStatus)
+                            setStatusJamesEdition(res2.data.jamesEditionStatus)
                             setStatusFacebook(res2.data.facebookStatus)
-                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, kyeroStatus: res2.data.kyeroStatus, facebookStatus: res2.data.facebookStatus })
+                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, kyeroStatus: res2.data.kyeroStatus, jamesEditionStatus: res2.data.jamesEditionStatus, facebookStatus: res2.data.facebookStatus })
                             /* axios.get(`/imovirtual/advert/${res.data.imovirtual}/statistics`)
                                 .then(res3 => {
                                     setLoading(false)
@@ -697,6 +699,105 @@ const Imovel = ({ params, signedIn }) => {
             })
     }
 
+    const handleJamesEditionPut = () => {
+        setLoading("A enviar pedido de publicação JamesEdition")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.put(`/jamesedition/advert/${params.id}`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(false)
+                        setStatusJamesEdition('pending_request')
+                        console.log(res2)
+                        setInfo({
+                            error: false,
+                            msg: res2.data.message
+                        })
+                        handleClose()
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        handleClose()
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'JamesEdition ERROR Posting in JamesEdition: ' + err.data ? err.data.error : err
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'JamesEdition ERROR Getting Property Info: ' + err.response.data.error
+                })
+                handleClose()
+                console.log(err)
+            })
+    }
+
+    const handleJamesEditionDelete = () => {
+        setLoading("A enviar pedido de eliminação JamesEdition")
+        axios.delete(`/jamesedition/delete/${params.id}`)
+            .then(res => {
+                setLoading(false)
+                setPublish(false)
+                setStatusJamesEdition('pending_delete')
+                setInfo({
+                    error: false,
+                    msg: 'Pedido de eliminação JamesEdition enviado com sucesso'
+                })
+                handleClose()
+            })
+            .catch(err => {
+                setLoading(false)
+                handleClose()
+                console.log(err)
+                setInfo({
+                    error: true,
+                    msg: 'JamesEdition ERROR delete in JamesEdition: ' +err.data ? err.data.error : err
+                })
+            })
+    }
+
+    const handleJamesEditionValidate = () => {
+        setLoading("A enviar pedido de validação JamesEdition")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.post(`/jamesedition/validate`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(true)
+                        console.log(res2.data)
+                        setInfo({
+                            error: true,
+                            msg: res2.data.message || 'JamesEdition validado com sucesso!'
+                        })
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        setPublish(false)
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'JamesEdition ERROR Validating Property: ' + err.response.data.error
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'JamesEdition ERROR Getting Property'
+                })
+                console.log(err)
+            })
+    }
+
     const handleFacebookPut = () => {
         setLoading("A enviar pedido de atualização Facebook")
         axios.get(`/api/imoveis/${params.id}`)
@@ -850,6 +951,7 @@ const Imovel = ({ params, signedIn }) => {
     const IdeStatusCode = statusIde || data.ideCode || 'Desativo'
     const SupercasaStatusCode = statusSupercasa || 'inactive'
     const KyeroStatusCode = statusKyero || 'inactive'
+    const JamesEditionStatusCode = statusJamesEdition || 'inactive'
     const isImoPending = ImoStatusCode.includes('pending') || ImoStatusCode.includes('pendente') ? true : false
 
     const objectiveStatus = data && data.business_type
@@ -929,6 +1031,11 @@ const Imovel = ({ params, signedIn }) => {
                         <Grid container justify="flex-start">
                             <Grid item xs={4}>
                                 <h3>Estado Kyero: <span style={{ color: KyeroStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(KyeroStatusCode)}</span></h3>
+                            </Grid>
+                        </Grid>
+                        <Grid container justify="flex-start">
+                            <Grid item xs={4}>
+                                <h3>Estado JamesEdition: <span style={{ color: JamesEditionStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(JamesEditionStatusCode)}</span></h3>
                             </Grid>
                         </Grid>
 
@@ -1025,6 +1132,18 @@ const Imovel = ({ params, signedIn }) => {
                             </Button>
                             <Button variant="contained" color="primary" disabled={data.kyeroStatus === 'deleted' || data.kyeroStatus === 'pending_delete' || !data.kyeroStatus} onClick={() => handleKyeroDelete()}>
                                 Eliminar do Kyero
+                            </Button>
+                        </Grid>
+                        <h2>Editar JamesEdition</h2>
+                        <Grid container justify='flex-end' className='action-container'>
+                            <Button variant="contained" color="primary" onClick={() => handleJamesEditionValidate()}>
+                                Validar JamesEdition
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => handleJamesEditionPut()}>
+                                {JamesEditionStatusCode && JamesEditionStatusCode !== 'deleted' ? "Actualizar JamesEdition" : "Publicar JamesEdition"}
+                            </Button>
+                            <Button variant="contained" color="primary" disabled={data.jamesEditionStatus === 'deleted' || data.jamesEditionStatus === 'pending_delete' || !data.jamesEditionStatus} onClick={() => handleJamesEditionDelete()}>
+                                Eliminar do JamesEdition
                             </Button>
                         </Grid>
                     </>
