@@ -98,6 +98,8 @@ const isAvailable = (imoStatus, action, ImoPrevious = null) => { /* action can b
             return action === 'post' || action === 'activate'
         case 'outdated_by_package':
             return action === 'put' || action === 'delete'
+        case 'pending':
+            return action === 'put'
         default: /* moderated, removed_by_moderator, outdated, all pendings, any other error */
             return false
     }
