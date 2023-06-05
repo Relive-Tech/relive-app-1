@@ -103,7 +103,6 @@ const Profile = (props) => {
         axios.get("/imovirtual/oauth")
             .then(res => {
                 setAuthLink(res.data)
-                setLoading(false)
             })
             .catch(err => {
                 console.log(err)
@@ -113,6 +112,8 @@ const Profile = (props) => {
             .then(res => {
                 const nots = res.data.notifications.reverse() /* Latest First */
                 setNotifications(nots)
+                
+                setLoading(false)
             })
             .catch(err => {
                 console.log(err)
@@ -191,25 +192,6 @@ const Profile = (props) => {
 
 
                 <h3>Verifica se já possuis a nossa app <a target="_blank" href="https://www.imovirtual.com/contapessoal/definicoes-de-conta/#aplicacoes">aqui</a>, se visualizar a app Relive, revoga e clica em "Autenticar conta do Imovirtual"</h3>
-
-
-                <h1>Pacotes Imovirtual</h1>
-                <TableContainer component={Paper}>
-                    <Table className="tabela" aria-label="simple table">
-                        <TableHead>
-                            <TableRow>
-                                <StyledTableCell>Pacote</StyledTableCell>
-                                <StyledTableCell align="right">Disponiveis/Total</StyledTableCell>
-                                <StyledTableCell align="right">Data compra</StyledTableCell>
-                                <StyledTableCell align="right">Data Começo</StyledTableCell>
-                                <StyledTableCell align="right">Data Proximo Pagamento</StyledTableCell>
-                                <StyledTableCell align="right">Data Expiração</StyledTableCell>
-                                <StyledTableCell align="right">Preço</StyledTableCell>
-                                <StyledTableCell align="right">Estado</StyledTableCell>
-                            </TableRow>
-                        </TableHead>
-                    </Table>
-                </TableContainer>
 
                 <h1>Notificações</h1>
                 <TableContainer component={Paper}>
