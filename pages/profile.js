@@ -94,7 +94,6 @@ const StyledTableRow = withStyles((theme) => ({
 const Profile = (props) => {
     const [notifications, setNotifications] = useState([]);
     const [authLink, setAuthLink] = useState(null);
-    const [prof, setProf] = useState({ data: [] });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -108,15 +107,7 @@ const Profile = (props) => {
             .catch(err => {
                 console.log(err)
             })
-        axios.get("/imovirtual/profile")
-            .then(res => {
-                setProf(res.data || [])
-                setLoading(false)
-            })
-            .catch(err => {
-                setLoading(false)
-                console.log(err)
-            })
+        
         axios.get("/imovirtual/notifications")
             .then(res => {
                 const nots = res.data.notifications.reverse() /* Latest First */
@@ -179,7 +170,7 @@ const Profile = (props) => {
                     </Button>
                 }
 
-                <Button variant="contained" color="primary" disabled={prof.data.length === 0} onClick={() => getTax()}>
+                <Button variant="contained" color="primary" onClick={() => getTax()}>
                     Get Taxonomy
                 </Button>
 
@@ -216,22 +207,6 @@ const Profile = (props) => {
                                 <StyledTableCell align="right">Estado</StyledTableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
-                            {prof.data.map((row, i) => (
-                                <StyledTableRow key={i}>
-                                    <StyledTableCell component="th" scope="row">
-                                        {row.name}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">{row.available}/{row.total}</StyledTableCell>
-                                    <StyledTableCell align="right">{moment(row.purchased_at).format('lll')}</StyledTableCell>
-                                    <StyledTableCell align="right">{moment(row.starts_at).format('lll')}</StyledTableCell>
-                                    <StyledTableCell align="right">{moment(row.invoice_at).format('lll')}</StyledTableCell>
-                                    <StyledTableCell align="right">{moment(row.expires_at).format('lll')}</StyledTableCell>
-                                    <StyledTableCell align="right">{row.price}</StyledTableCell>
-                                    <StyledTableCell align="right">{row.in_grace_period ? 'Expirado' : 'Activo'}</StyledTableCell>
-                                </StyledTableRow>
-                            ))}
-                        </TableBody>
                     </Table>
                 </TableContainer>
 
