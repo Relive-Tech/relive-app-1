@@ -103,6 +103,7 @@ const Profile = (props) => {
         axios.get("/imovirtual/oauth")
             .then(res => {
                 setAuthLink(res.data)
+                setLoading(false)
             })
             .catch(err => {
                 console.log(err)
