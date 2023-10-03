@@ -120,6 +120,7 @@ const Imovel = ({ params, signedIn }) => {
     const [statusIde, setStatusIde] = useState(null);
     const [statusSupercasa, setStatusSupercasa] = useState(null);
     const [statusKyero, setStatusKyero] = useState(null);
+    const [statusGreenAcres, setStatusGreenAcres] = useState(null);
     const [statusJamesEdition, setStatusJamesEdition] = useState(null);
     const [statusFacebook, setStatusFacebook] = useState(null);
     const [statusImoPrevious, setStatusImoPrevious] = useState(null);
@@ -319,9 +320,10 @@ const Imovel = ({ params, signedIn }) => {
                             setStatusImoPrevious(res2.data.prevImoCode)
                             setStatusSupercasa(res2.data.supercasaStatus)
                             setStatusKyero(res2.data.kyeroStatus)
+                            setStatusGreenAcres(res2.data.greenAcresStatus)
                             setStatusJamesEdition(res2.data.jamesEditionStatus)
                             setStatusFacebook(res2.data.facebookStatus)
-                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, kyeroStatus: res2.data.kyeroStatus, jamesEditionStatus: res2.data.jamesEditionStatus, facebookStatus: res2.data.facebookStatus })
+                            setData({ ...res.data, imovirtual: res2.data.data, statistics: null, supercasaStatus: res2.data.supercasaStatus, kyeroStatus: res2.data.kyeroStatus, greenAcresStatus: res2.data.greenAcresStatus, jamesEditionStatus: res2.data.jamesEditionStatus, facebookStatus: res2.data.facebookStatus })
                             /* axios.get(`/imovirtual/advert/${res.data.imovirtual}/statistics`)
                                 .then(res3 => {
                                     setLoading(false)
@@ -701,6 +703,105 @@ const Imovel = ({ params, signedIn }) => {
             })
     }
 
+    const handleGreenAcresPut = () => {
+        setLoading("A enviar pedido de publicação Green Acres")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.put(`/greenacres/advert/${params.id}`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(false)
+                        setStatusGreenAcres('pending_request')
+                        console.log(res2)
+                        setInfo({
+                            error: false,
+                            msg: res2.data.message
+                        })
+                        handleClose()
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        handleClose()
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Green Acres ERROR Posting in Kyero: ' + err.data ? err.data.error : err
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Green Acres ERROR Getting Property Info: ' + err.response.data.error
+                })
+                handleClose()
+                console.log(err)
+            })
+    }
+
+    const handleGreenAcresDelete = () => {
+        setLoading("A enviar pedido de eliminação GreenAcres")
+        axios.delete(`/greenacres/delete/${params.id}`)
+            .then(res => {
+                setLoading(false)
+                setPublish(false)
+                setStatusGreenAcres('pending_delete')
+                setInfo({
+                    error: false,
+                    msg: 'Pedido de eliminação Green Acres enviado com sucesso'
+                })
+                handleClose()
+            })
+            .catch(err => {
+                setLoading(false)
+                handleClose()
+                console.log(err)
+                setInfo({
+                    error: true,
+                    msg: 'Green Acres ERROR delete in Green Acres: ' +err.data ? err.data.error : err
+                })
+            })
+    }
+
+    const handleGreenAcresValidate = () => {
+        setLoading("A enviar pedido de validação Green Acres")
+        axios.get(`/api/imoveis/${params.id}`)
+            .then(res => {
+                axios.post(`/greenacres/validate`, {
+                    data: res.data
+                })
+                    .then(res2 => {
+                        setLoading(false)
+                        setPublish(true)
+                        console.log(res2.data)
+                        setInfo({
+                            error: true,
+                            msg: res2.data.message || 'Green Acres validado com sucesso!'
+                        })
+                    })
+                    .catch(err => {
+                        setLoading(false)
+                        setPublish(false)
+                        console.log(err)
+                        setInfo({
+                            error: true,
+                            msg: 'Green Acres ERROR Validating Property: ' + err.response.data.error
+                        })
+                    })
+            })
+            .catch(err => {
+                setLoading(false)
+                setInfo({
+                    error: true,
+                    msg: 'Green Acres ERROR Getting Property'
+                })
+                console.log(err)
+            })
+    }
+
     const handleJamesEditionPut = () => {
         setLoading("A enviar pedido de publicação JamesEdition")
         axios.get(`/api/imoveis/${params.id}`)
@@ -953,6 +1054,7 @@ const Imovel = ({ params, signedIn }) => {
     const IdeStatusCode = statusIde || data.ideCode || 'Desativo'
     const SupercasaStatusCode = statusSupercasa || 'inactive'
     const KyeroStatusCode = statusKyero || 'inactive'
+    const GreenAcresStatusCode = statusGreenAcres || 'inactive'
     const JamesEditionStatusCode = statusJamesEdition || 'inactive'
     const isImoPending = ImoStatusCode.includes('pending') || ImoStatusCode.includes('pendente') ? true : false
 
@@ -1033,6 +1135,11 @@ const Imovel = ({ params, signedIn }) => {
                         <Grid container justify="flex-start">
                             <Grid item xs={4}>
                                 <h3>Estado Kyero: <span style={{ color: KyeroStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(KyeroStatusCode)}</span></h3>
+                            </Grid>
+                        </Grid>
+                        <Grid container justify="flex-start">
+                            <Grid item xs={4}>
+                                <h3>Estado Green Acres: <span style={{ color: GreenAcresStatusCode === 'active' ? '#82ca9d' : 'red' }}>{translateSupercasaStatus(GreenAcresStatusCode)}</span></h3>
                             </Grid>
                         </Grid>
                         <Grid container justify="flex-start">
@@ -1134,6 +1241,18 @@ const Imovel = ({ params, signedIn }) => {
                             </Button>
                             <Button variant="contained" color="primary" disabled={data.kyeroStatus === 'deleted' || data.kyeroStatus === 'pending_delete' || !data.kyeroStatus} onClick={() => handleKyeroDelete()}>
                                 Eliminar do Kyero
+                            </Button>
+                        </Grid>
+                        <h2>Editar Green Acres</h2>
+                        <Grid container justify='flex-end' className='action-container'>
+                            <Button variant="contained" color="primary" onClick={() => handleGreenAcresValidate()}>
+                                Validar GreenAcres
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => handleGreenAcresPut()}>
+                                {GreenAcresStatusCode && GreenAcresStatusCode !== 'deleted' ? "Actualizar Green Acres" : "Publicar Green Acres"}
+                            </Button>
+                            <Button variant="contained" color="primary" disabled={data.greenAcresStatus === 'deleted' || data.greenAcresStatus === 'pending_delete' || !data.greenAcresStatus} onClick={() => handleGreenAcresDelete()}>
+                                Eliminar do Green Acres
                             </Button>
                         </Grid>
                         <h2>Editar JamesEdition</h2>
