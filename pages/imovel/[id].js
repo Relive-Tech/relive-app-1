@@ -1254,7 +1254,7 @@ const Imovel = ({ params, signedIn }) => {
                             <Button variant="contained" color="primary" disabled={data.greenAcresStatus === 'deleted' || data.greenAcresStatus === 'pending_delete' || !data.greenAcresStatus} onClick={() => handleGreenAcresDelete()}>
                                 Eliminar do Green Acres
                             </Button>
-                        </Grid>
+                        </Grid> 
                         <h2>Editar JamesEdition</h2>
                         <Grid container justify='flex-end' className='action-container'>
                             <Button variant="contained" color="primary" onClick={() => handleJamesEditionValidate()}>
